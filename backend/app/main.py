@@ -21,7 +21,7 @@
     3. 后台任务必须能被优雅关闭（shutdown 时 cancel）。
 
 【技术要点】
-    - 课程项目没有 Alembic，用 create_all + 手写 ALTER TABLE 做"穷人版迁移"
+    - 当前实现没有引入 Alembic，用 create_all + 手写 ALTER TABLE 做"穷人版迁移"
     - create_all 只建缺失的表，【不会】修改已有表结构 → 新增字段必须手写 ALTER
 
 Java 类比：
@@ -182,7 +182,7 @@ def create_app() -> FastAPI:
         # ── 5.1 建表 ──
         # Base.metadata 里注册了 db/models.py 的全部 32 个类。
         # create_all 只会创建【不存在】的表，已存在的表不会改动结构。
-        # 课程项目默认自动建表；生产风格流程会在后续加入 Alembic 迁移。
+        # 当前实现默认自动建表；生产风格流程会在后续加入 Alembic 迁移。
         Base.metadata.create_all(bind=engine)
 
         # inspector 用于反射（读取）现有数据库的真实结构

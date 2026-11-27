@@ -28,7 +28,7 @@ project_docs:
     - README.md
     - docs/architecture/**
   exclude:
-    - docs/course/**
+    - docs/private/**
     - "docs/demo code/**"
 include_manifests: true
 """,
@@ -87,21 +87,21 @@ def test_project_index_state_reports_stale_when_files_change(tmp_path) -> None:
     assert get_project_index_state(db, repo)["status"] == "stale"
 
 
-def test_allowlist_rescan_removes_course_docs_from_rag_evidence_and_graph(tmp_path) -> None:
+def test_allowlist_rescan_removes_private_docs_from_rag_evidence_and_graph(tmp_path) -> None:
     project = tmp_path / "demo"
     (project / "docs" / "architecture").mkdir(parents=True)
-    (project / "docs" / "course").mkdir(parents=True)
+    (project / "docs" / "private").mkdir(parents=True)
     (project / "docs" / "demo code").mkdir(parents=True)
     (project / ".data" / "runtime-checkout").mkdir(parents=True)
     (project / "README.md").write_text("# Demo\n\nProject overview.", encoding="utf-8")
     (project / "docs" / "architecture" / "system.md").write_text(
         "# System architecture\n\nFastAPI service boundary.", encoding="utf-8"
     )
-    (project / "docs" / "course" / "lesson.md").write_text(
-        "# Course lesson\n\nCOURSE_ONLY_MARKER should never reach project retrieval.", encoding="utf-8"
+    (project / "docs" / "private" / "lesson.md").write_text(
+        "# Private lesson\n\nPRIVATE_ONLY_MARKER should never reach project retrieval.", encoding="utf-8"
     )
     (project / "docs" / "demo code" / "README.md").write_text(
-        "# Course demo\n\nDEMO_ONLY_MARKER is teaching material.", encoding="utf-8"
+        "# Private demo\n\nDEMO_ONLY_MARKER is reference material.", encoding="utf-8"
     )
     (project / "package.json").write_text('{"name":"demo","version":"1.0.0"}', encoding="utf-8")
     (project / ".data" / "runtime-checkout" / "package.json").write_text(
@@ -115,7 +115,7 @@ def test_allowlist_rescan_removes_course_docs_from_rag_evidence_and_graph(tmp_pa
 
     assert scan_project_index(db, repo)["status"] == "ready"
     assert any(
-        str((doc.meta or {}).get("path") or "").startswith("docs/course/")
+        str((doc.meta or {}).get("path") or "").startswith("docs/private/")
         for doc in db.query(Document).filter(Document.repo_id == repo.id, Document.source_type == "project_doc").all()
     )
 
@@ -132,16 +132,16 @@ def test_allowlist_rescan_removes_course_docs_from_rag_evidence_and_graph(tmp_pa
     assert state["summary_json"]["excludedFiles"] == 2
     assert "README.md" in indexed_paths
     assert "docs/architecture/system.md" in indexed_paths
-    assert not any(path.startswith("docs/course/") or path.startswith("docs/demo code/") for path in indexed_paths)
+    assert not any(path.startswith("docs/private/") or path.startswith("docs/demo code/") for path in indexed_paths)
     assert not any(path.startswith(".data/") for path in indexed_paths)
     assert not any(
-        "COURSE_ONLY_MARKER" in item.content or "DEMO_ONLY_MARKER" in item.content
+        "PRIVATE_ONLY_MARKER" in item.content or "DEMO_ONLY_MARKER" in item.content
         for item in db.query(EvidenceItem).filter(EvidenceItem.repo_id == repo.id).all()
     )
     assert not search_similar_documents(
         db,
         repo.id,
-        "COURSE_ONLY_MARKER",
+        "PRIVATE_ONLY_MARKER",
         retrieval_method="fulltext",
         apply_rerank=False,
     )
@@ -157,7 +157,7 @@ def test_allowlist_rescan_removes_course_docs_from_rag_evidence_and_graph(tmp_pa
     )
     graph_nodes = _collect_nodes(db, repo.id).values()
     assert not any(
-        str((node.get("metadata") or {}).get("path") or "").startswith(("docs/course/", "docs/demo code/"))
+        str((node.get("metadata") or {}).get("path") or "").startswith(("docs/private/", "docs/demo code/"))
         for node in graph_nodes
     )
 
@@ -165,12 +165,12 @@ def test_allowlist_rescan_removes_course_docs_from_rag_evidence_and_graph(tmp_pa
 def test_excluded_files_do_not_make_project_index_stale(tmp_path) -> None:
     project = tmp_path / "demo"
     (project / "docs" / "architecture").mkdir(parents=True)
-    (project / "docs" / "course").mkdir(parents=True)
+    (project / "docs" / "private").mkdir(parents=True)
     (project / "README.md").write_text("# Demo\n\nProject overview.", encoding="utf-8")
     architecture = project / "docs" / "architecture" / "system.md"
     architecture.write_text("# Architecture\n\nVersion one.", encoding="utf-8")
-    course = project / "docs" / "course" / "lesson.md"
-    course.write_text("# Lesson\n\nVersion one.", encoding="utf-8")
+    private_dir = project / "docs" / "private" / "lesson.md"
+    private_dir.write_text("# Lesson\n\nVersion one.", encoding="utf-8")
     _write_allowlist_config(project)
 
     db = _db_session()
@@ -179,7 +179,7 @@ def test_excluded_files_do_not_make_project_index_stale(tmp_path) -> None:
     db.flush()
 
     assert scan_project_index(db, repo)["status"] == "ready"
-    course.write_text("# Lesson\n\nA much longer excluded course revision.", encoding="utf-8")
+    private_dir.write_text("# Lesson\n\nA much longer excluded private revision.", encoding="utf-8")
     assert get_project_index_state(db, repo)["status"] == "ready"
 
     architecture.write_text("# Architecture\n\nVersion two changes project behavior.", encoding="utf-8")
@@ -188,11 +188,11 @@ def test_excluded_files_do_not_make_project_index_stale(tmp_path) -> None:
 
 def test_discover_project_docs_defaults_to_automatic_mode_without_config(tmp_path) -> None:
     project = tmp_path / "demo"
-    (project / "docs" / "course").mkdir(parents=True)
-    lesson = project / "docs" / "course" / "lesson.md"
+    (project / "docs" / "private").mkdir(parents=True)
+    lesson = project / "docs" / "private" / "lesson.md"
     lesson.write_text("# Lesson\n\nLegacy automatic discovery remains compatible.", encoding="utf-8")
 
-    assert [item.relative_path for item in discover_project_docs(project)] == ["docs/course/lesson.md"]
+    assert [item.relative_path for item in discover_project_docs(project)] == ["docs/private/lesson.md"]
 
 
 def test_snooze_project_index_sets_missing_state_with_cooldown(tmp_path) -> None:

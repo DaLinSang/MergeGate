@@ -1,11 +1,10 @@
-# 6.4 GitHub 同步链路 · 重新组织版
+# GitHub 同步链路 · 专题讲解
 
-> 对飞书文档《6.4｜源码解析：GitHub 协作数据怎样同步到系统》的重新梳理
-> 原文 909 行 / 2.6 万字，本文按「分层 → 数据流 → 设计意图」重排，并标注了原文与项目实际代码的差异
+> 本文梳理 GitHub 协作数据是怎样同步到系统中的，按「分层 → 数据流 → 设计意图」展开。
 
 ---
 
-## 阅读前：先定位这一节在讲什么
+## 阅读前：先定位本文在讲什么
 
 **一句话**：GitHub 上的 Issue / PR / CI 是外部数据，系统要**定时把它们搬进本地 PostgreSQL**，之后所有查询都读本地，不再实时打 GitHub。
 
@@ -18,17 +17,17 @@
 | GitHub 挂了页面就白屏 | GitHub 挂了照样能看昨天的快照 |
 | 没法做跨对象分析（比如"这个 PR 关联哪些 Issue"） | 数据都在本地，随便 JOIN |
 
-**这一节的范围**：只管"搬数据 + 读数据"。RAG 索引、向量检索、Agent 调用都是**下一节**的事。
+**本文的范围**：只管"搬数据 + 读数据"。RAG 索引、向量检索、Agent 调用不在本文范围内。
 
 ---
 
-## 一、为什么原文档读起来乱（4 个原因）
+## 一、为什么这块代码读起来绕（4 个原因）
 
 理解这一点，你就知道该怎么读了。
 
 ### 原因 1：按"写代码的顺序"讲，不是按"数据流动的顺序"讲
 
-原文的章节顺序是：
+内容的逻辑顺序是：
 
 ```
 models.py → client.py → issues.py → schemas → repos_sync.py → routes
@@ -42,13 +41,13 @@ models.py → client.py → issues.py → schemas → repos_sync.py → routes
 routes → repos_sync → github/ → models
 ```
 
-所以读原文时，你会不断产生"我为什么要先看这个文件"的疑惑——因为你被要求先看"终点"再看"起点"。
+按写代码顺序读，你会不断产生"我为什么要先看这个文件"的疑惑——因为先看到的是"终点"再看"起点"。
 
 ### 原因 2：从不点明"这是第几层"
 
-原文混着讲四个不同层的东西，但从不标注：
+这段代码混着四个不同层的东西，但没有明确标注：
 
-| 原文讲的代码 | 实际属于哪一层 |
+| 代码 | 实际属于哪一层 |
 |---|---|
 | `models.py` | 数据层 |
 | `client.py` / `issues.py` | 外部适配层 |
@@ -66,7 +65,7 @@ routes → repos_sync → github/ → models
 
 读完一节，你不知道自己走到了哪。
 
-### 原因 4：代码是教学简化版，与项目实际代码有 6 处出入
+### 原因 4：初始实现与当前代码有 6 处出入
 
 你对照源码时会发现对不上，越看越困惑。详见第五节。
 
@@ -240,7 +239,7 @@ issue.title = item.get("title") or issue.title   # 存在 → 覆盖字段
 |---|---|---|
 | 两个仓库都有 Issue #42 → 拿错项目 | 返回该仓库所有 Issue → 无法定位单条 | ✅ 正确 |
 
-这就是原文强调的"**仓库串线**"问题。
+这就是设计上要防的"**仓库串线**"问题。
 
 **三类资源的落库规则不一样**：
 
@@ -262,7 +261,7 @@ for item in files:
     db.add(PRFile(pr_id=pr.id, filename=item.get("filename") or "", ...))
 ```
 
-**代价**：如果这次拉取失败（网络问题），`files` 是空列表，就把原来的数据删光了——**留下一个空快照**。这是原文自己承认的缺陷。
+**代价**：如果这次拉取失败（网络问题），`files` 是空列表，就把原来的数据删光了——**留下一个空快照**。这是这套策略已知的缺陷。
 
 ### Step 5 · 读取：永远不碰 GitHub
 
@@ -311,7 +310,7 @@ async def list_issues(repo_id: UUID, db: Session = Depends(get_db)):
 
 ### 4.2 同步路径 vs 读取路径
 
-这是原文最核心的洞察，但藏在很后面：
+这是整套设计里最核心的洞察：
 
 ```
 【同步路径】写
@@ -334,13 +333,13 @@ async def list_issues(repo_id: UUID, db: Session = Depends(get_db)):
 
 ---
 
-## 五、文档与项目实际代码的 6 处差异
+## 五、实现中值得注意的 6 个细节
 
-**这是你对照源码时最容易困惑的地方**。原文的代码是"教学简化版"，项目实际代码已经演进了。
+这几处是读源码时最容易忽略的实现细节。
 
 ### 差异 1：`RepoConnectRequest` 的字段
 
-**原文**：
+**实现**：
 
 ```python
 class RepoConnectRequest(BaseModel):
@@ -390,18 +389,18 @@ def _inspect_local_repository(raw_path: str) -> tuple[Path, GitRemoteInfo]:
 
 ### 差异 3：`GitHubClient` 不只是"读"
 
-**原文说**："`GitHubClient` 只负责发送 HTTP 请求并解析响应。"
+`GitHubClient` 不只负责发送 HTTP 请求，还封装了写操作。
 
 **实际**：它还有写操作。
 
 ```python
 class GitHubClient:
     # 读
-    async def get(...)           # 原文有
+    async def get(...)
     async def get_bytes(...)     # 文档没有（下载 CI 日志 zip 用）
-    async def get_repo(...)      # 原文有
+    async def get_repo(...)
 
-    # 写 ← 文档完全没提
+    # 写操作
     async def post(...)
     async def patch(...)
     async def create_issue(...)
@@ -412,11 +411,11 @@ class GitHubClient:
 
 **这些写操作服务于谁**：`ActionDraft` 的确认执行。AI 生成草稿 → 人工确认 → 调这些方法真正改 GitHub。
 
-所以原文那句话应该改成："`GitHubClient` 只负责和 GitHub 通信，不决定业务规则。"
+准确的说法是："`GitHubClient` 只负责和 GitHub 通信，不决定业务规则。"
 
 ### 差异 4：token 的优先级
 
-**原文**：
+**实现**：
 
 ```python
 token = settings.github_token      # 只用全局
@@ -435,7 +434,7 @@ token = decrypt_token(repo.github_token_encrypted, settings.token_encryption_key
 
 ### 差异 5：连接后还有后台任务
 
-**原文**：连接完返回结果就结束了。
+**实现**：连接完返回结果就结束了。
 
 **实际**：
 
@@ -443,11 +442,11 @@ token = decrypt_token(repo.github_token_encrypted, settings.token_encryption_key
 background_tasks.add_task(sync_repository_code_analysis_by_id, repo.id)
 ```
 
-连接成功后还会**异步建代码图谱**（解析代码符号、调用关系）。这是文档没提的后续动作。
+连接成功后还会**异步建代码图谱**（解析代码符号、调用关系）。这是连接成功后的后续动作。
 
 ### 差异 6：路由注册带 tags
 
-**原文**：
+**实现**：
 
 ```python
 app.include_router(repos.router, prefix="/api/repos")
@@ -628,7 +627,7 @@ curl http://localhost:8000/api/repos/{repo_id}/issues
 2. **必须用 `state=all`** → 否则关闭状态永远同步不过来
 3. **查询必须带 `repo_id`** → 否则两个仓库的 #42 会串线
 
-### 原文的一句话总结（值得记住）
+### 一句话总结（值得记住）
 
 > **入口可以增加，同步规则必须收口。**
 

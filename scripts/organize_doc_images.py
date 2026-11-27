@@ -256,12 +256,12 @@ def write_archive_metadata(course_root: Path, orphan_moves: list[Move]) -> None:
     archive_root.mkdir(parents=True, exist_ok=True)
     readme = archive_root / "README.md"
     readme.write_text(
-        "# 课程孤立图片归档\n\n"
-        "此目录保存整理时未被任何课程 Markdown 引用的图片。文件保持原相对路径，"
+        "# 文档孤立图片归档\n\n"
+        "此目录保存整理时未被任何文档 Markdown 引用的图片。文件保持原相对路径，"
         "便于追溯旧章节和旧素材来源。\n\n"
         "- 归档日期：2026-07-30\n"
         f"- 归档图片：{len(orphan_moves)} 张\n"
-        "- 使用规则：不要从课程正文直接引用这里的文件；确认仍有价值时，先移回对应"
+        "- 使用规则：不要从正文直接引用这里的文件；确认仍有价值时，先移回对应"
         "章节的 `images/<文章文件名>/`，再添加正文引用。\n"
         "- 详细清单：`manifest.csv`\n",
         encoding="utf-8",

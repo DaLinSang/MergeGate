@@ -68,7 +68,7 @@ class User(Base):
     【谁写入】services/permissions.py 的 ensure_demo_user()
     【谁读取】权限校验 require_permission()
 
-    注意：这是"课程项目级"的简化用户系统 —— 没有密码、没有登录态，
+    注意：这是"演示级"的简化用户系统 —— 没有密码、没有登录态，
     靠"取第一个用户"来确定当前身份。
     """
 
