@@ -91,7 +91,7 @@ async def _execute_github_draft(db: Session, draft: ActionDraft, repo: Repositor
 
     if draft_type == "create_issue":
         # 标题兜底：用正文第一行截 120 字。AI 有时只给正文不给标题
-        title = draft.title or (draft.content.splitlines()[0][:120] if draft.content else "DevFlow AI Issue")
+        title = draft.title or (draft.content.splitlines()[0][:120] if draft.content else "MergeGate Issue")
         return await client.create_issue(repo.owner, repo.name, title, draft.content)
 
     if draft_type == "close_issue":
@@ -112,7 +112,7 @@ async def _execute_github_draft(db: Session, draft: ActionDraft, repo: Repositor
 
     if draft_type == "send_report":
         # 报告目前只在站内标记"已发送"，没接外部渠道（飞书/邮件）
-        return {"status": "recorded", "message": "报告草稿已在 DevFlow AI 中标记为已发送，未接入外部消息渠道。"}
+        return {"status": "recorded", "message": "报告草稿已在 MergeGate 中标记为已发送，未接入外部消息渠道。"}
 
     raise RuntimeError(f"暂不支持执行草稿类型：{draft.draft_type}")
 

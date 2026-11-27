@@ -23,7 +23,7 @@
       │
       ├─ ② 注入工具（_build_conversation_tools）
       │   14 个工具：workspace.* / repo_health / rag.search / issue / pr / ci /
-      │              report / safety / workflow / devflow_*（MCP 记忆工具）
+      │              report / safety / workflow / mergegate_*（MCP 记忆工具）
       │
       ├─ ③ 跑 Agent（ChatAgent().run_stream）
       │   内部：model_decision ⇄ tool_action 循环（最多 12 步）
@@ -526,7 +526,7 @@ def _repo_checkout_path(repo: Repository) -> Path:
 
 
 def _workspace_root(repo: Repository | None) -> Path:
-    """工作区根目录。没有仓库时用项目根（可以读 DevFlow 自己的代码）。"""
+    """工作区根目录。没有仓库时用项目根（可以读 MergeGate 自己的代码）。"""
     if repo is None:
         return PROJECT_ROOT
     checkout_path = _repo_checkout_path(repo)
@@ -1168,7 +1168,7 @@ def _build_conversation_tools(repo: Repository | None, conversation: Conversatio
             arguments["repo_id"] = str(repo.id)
         if conversation:
             arguments["conversation_id"] = str(conversation.id)
-        if tool_name == "devflow_search_evidence":
+        if tool_name == "mergegate_search_evidence":
             # 模型有时只传 message 不传 query，这里补一下
             arguments.setdefault("query", input_data.get("message") or "")
         result = await mcp_client.call_tool(tool_name, arguments)
@@ -1179,20 +1179,20 @@ def _build_conversation_tools(repo: Repository | None, conversation: Conversatio
             if isinstance(item, dict) and item.get("type") == "text"
         ]
         return {
-            "route": tool_name.replace("devflow_", ""),
+            "route": tool_name.replace("mergegate_", ""),
             "tool_calls": [{"tool_name": tool_name, "arguments": arguments, "status": "success"}],
             "answer": "\n".join(text_parts).strip(),
             "citations": [],
         }
 
     async def search_evidence_mcp(input_data: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
-        return await call_memory_mcp("devflow_search_evidence", input_data, context)
+        return await call_memory_mcp("mergegate_search_evidence", input_data, context)
 
     async def get_thread_context_mcp(input_data: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
-        return await call_memory_mcp("devflow_get_thread_context", input_data, context)
+        return await call_memory_mcp("mergegate_get_thread_context", input_data, context)
 
     async def read_session_events_mcp(input_data: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
-        return await call_memory_mcp("devflow_read_session_events", input_data, context)
+        return await call_memory_mcp("mergegate_read_session_events", input_data, context)
 
     # ── 工作区工具（读本地代码，不进 RAG）──
     async def list_workspace_files(input_data: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
@@ -1573,9 +1573,9 @@ def _build_conversation_tools(repo: Repository | None, conversation: Conversatio
         "report_agent.generate_weekly_report": generate_report,
         "safety_agent.classify_action_risk": check_safety,
         "workflow.run_engineering_review": run_engineering_workflow,
-        "devflow_search_evidence": search_evidence_mcp,
-        "devflow_get_thread_context": get_thread_context_mcp,
-        "devflow_read_session_events": read_session_events_mcp,
+        "mergegate_search_evidence": search_evidence_mcp,
+        "mergegate_get_thread_context": get_thread_context_mcp,
+        "mergegate_read_session_events": read_session_events_mcp,
     }
 
 

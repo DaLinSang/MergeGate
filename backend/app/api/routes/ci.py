@@ -61,7 +61,7 @@ PROJECT_DOC_TYPES = {"knowledge_file", "memory_note", "project_doc"}
 
 # 流式"公开排查过程"的提示词。同样要求不暴露私有推理链。
 PUBLIC_REASONING_PROMPT = """
-你是 DevFlow AI 的 CI 根因分析 Agent。请用中文流式输出一段“公开排查过程”，帮助用户理解你如何按计划定位失败 CI。
+你是 MergeGate 的 CI 根因分析 Agent。请用中文流式输出一段“公开排查过程”，帮助用户理解你如何按计划定位失败 CI。
 要求：
 - 只输出面向用户的可审计分析摘要，不输出隐藏链路思维或私有推理链。
 - 按计划说明你检查了失败 job、失败 step、首个错误块、失败类型、相关代码/配置、最近 PR，并如何判断是否阻塞合并。

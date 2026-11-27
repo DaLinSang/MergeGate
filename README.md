@@ -1,6 +1,6 @@
-# DevFlow AI
+# MergeGate
 
-DevFlow AI 是一个面向 GitHub PR / Issue 研发协作的全栈 AI Agent 项目。系统会连接仓库数据，分析 Issue、PR diff、CI 日志、项目知识库和本地工作区代码，并返回结构化建议与安全的操作草稿。
+MergeGate 是一个面向 GitHub PR / Issue 研发协作的全栈 AI Agent 项目。系统会连接仓库数据，分析 Issue、PR diff、CI 日志、项目知识库和本地工作区代码，并返回结构化建议与安全的操作草稿。
 
 ## 核心能力
 
@@ -122,7 +122,7 @@ Content-Type: application/json
   "repo_id": "<repository-uuid>",
   "run_judge": true,
   "top_k": 5,
-  "suite_id": "devflow-real-project-rag-baseline"
+  "suite_id": "mergegate-real-project-rag-baseline"
 }
 ```
 

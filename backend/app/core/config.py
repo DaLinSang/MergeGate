@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     # 一、应用自身
     # ────────────────────────────────────────────────────────────
     app_env: str = "development"          # 环境标识。等于 "production" 时会关闭宽松的 CORS 正则
-    app_name: str = "DevFlow AI"          # 显示在 /docs 和 /health 里的名字
+    app_name: str = "MergeGate"          # 显示在 /docs 和 /health 里的名字
     api_host: str = "0.0.0.0"             # 监听地址。0.0.0.0 = 允许局域网访问
     api_port: int = 8000                  # 监听端口
     # 允许跨域的前端地址（逗号分隔）。
@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     # ────────────────────────────────────────────────────────────
     # 连接串格式：postgresql+驱动://用户名:密码@主机:端口/库名
     # psycopg 是 PostgreSQL 的 Python 驱动（psycopg3）
-    database_url: str = "postgresql+psycopg://devflow:devflow@localhost:5432/devflow"
+    database_url: str = "postgresql+psycopg://mergegate:mergegate@localhost:5432/mergegate"
 
     # ────────────────────────────────────────────────────────────
     # 三、GitHub 接入
@@ -103,7 +103,7 @@ class Settings(BaseSettings):
     milvus_token: str | None = None
     # collection 名里带 qwen1024，是为了让人一眼看出"这个集合用的是 1024 维 Qwen 向量空间"。
     # 换 embedding 模型必须换 collection，否则不同向量空间会混在一起。
-    milvus_collection: str = "devflow_rag_qwen1024"
+    milvus_collection: str = "mergegate_rag_qwen1024"
     rag_rerank_top_n: int = 24                                     # 只对前 N 条做重排（省算力）
 
     # ────────────────────────────────────────────────────────────
@@ -159,7 +159,7 @@ class Settings(BaseSettings):
     # ────────────────────────────────────────────────────────────
     workflow_task_timeout_seconds: float = 90.0                     # 单个子任务超时
     prompt_cache_enabled: bool = True                                # 启用上游的 prompt 缓存（省 token 费用）
-    prompt_cache_key: str | None = "devflow-agent-v1"                # 缓存分区键
+    prompt_cache_key: str | None = "mergegate-agent-v1"                # 缓存分区键
     prompt_cache_retention: str | None = None                        # 缓存保留策略
 
     # ────────────────────────────────────────────────────────────

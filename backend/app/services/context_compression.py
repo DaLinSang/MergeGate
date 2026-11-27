@@ -128,7 +128,7 @@ COMPACTABLE_TOOL_HINTS = (
     "workspace.search_code",
     "workspace.list_files",
     "rag.search_similar_documents",
-    "devflow_search_evidence",
+    "mergegate_search_evidence",
     "repo_health.generate_summary",
     "ci_debug_agent.analyze_workflow_run",
     "read",
@@ -1263,7 +1263,7 @@ def compress_retrieval_results(
 # 关键设计：目标不是"减少 token"，而是"保住工作连续性"——
 #   普通摘要会丢掉文件路径、命令、错误信息，导致压缩后 Agent 忘了在干什么。
 # 所以这里明确要求保留 5 类内容，并要求"原文保留关键标识符"。
-COMPACT_SUMMARY_SYSTEM_PROMPT = """请在上下文压缩后，为 DevFlow AI 创建一份可延续工作的摘要。
+COMPACT_SUMMARY_SYSTEM_PROMPT = """请在上下文压缩后，为 MergeGate 创建一份可延续工作的摘要。
 目标不是单纯减少 token，而是为软件工程 Agent 保留工作连续性。
 
 请用纯文本返回以下部分：

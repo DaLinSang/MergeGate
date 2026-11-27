@@ -172,10 +172,10 @@ def stable_source_id(repo_id: uuid.UUID | str, source_type: str, key: str) -> uu
         uuid4 = 随机（每次都不一样）→ 适合"每次都是新对象"
         uuid5 = 确定性（同样的输入永远同样的输出）→ 适合"同一个业务对象重复处理"
 
-    【为什么用 NAMESPACE_URL + 自定义前缀 "devflow:"】
+    【为什么用 NAMESPACE_URL + 自定义前缀 "mergegate:"】
         避免和其他系统的 uuid5 撞车；前缀里带 repo_id 保证跨仓库不冲突。
     """
-    return uuid.uuid5(uuid.NAMESPACE_URL, f"devflow:{repo_id}:{source_type}:{key}")
+    return uuid.uuid5(uuid.NAMESPACE_URL, f"mergegate:{repo_id}:{source_type}:{key}")
 
 
 def _escape_filter_value(value: str) -> str:

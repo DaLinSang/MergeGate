@@ -943,7 +943,7 @@ class ContextAssembler:
                 rehydration = (boundary.meta or {}).get("rehydration") or {}
                 # 告诉模型"原文还能查回来"，避免它以为信息永久丢失
                 recovery_hint = (
-                    "\nExact transcript recovery: call devflow_get_thread_context with this conversation"
+                    "\nExact transcript recovery: call mergegate_get_thread_context with this conversation"
                     if transcript_ref
                     else ""
                 )
@@ -1563,7 +1563,7 @@ class ProgressiveContextManager:
                 "transcript_ref": {
                     "repo_id": str(repo.id),
                     "conversation_id": str(conversation.id),
-                    "tool": "devflow_get_thread_context",
+                    "tool": "mergegate_get_thread_context",
                 },
                 "messages_summarized": len(summarized_rows),
                 "messages_preserved": len(keep_rows),
@@ -1666,8 +1666,8 @@ class ProgressiveContextManager:
             "recent_tools": recent_tools,
             # 告诉模型"要更多细节就用这两个工具"（和边界的 recovery_hint 呼应）
             "recovery": {
-                "exact_transcript_tool": "devflow_get_thread_context",
-                "sealed_session_tool": "devflow_read_session_events",
+                "exact_transcript_tool": "mergegate_get_thread_context",
+                "sealed_session_tool": "mergegate_read_session_events",
             },
         }
 
@@ -2192,7 +2192,7 @@ class MemoryTools:
             self.db,
             repo_id=self.repo_id,
             conversation_id=self.conversation_id,
-            tool_name="devflow_search_evidence",
+            tool_name="mergegate_search_evidence",
             query=query,
             results=results,
             citations=citations,
@@ -2323,7 +2323,7 @@ class MemoryTools:
             self.db,
             repo_id=self.repo_id,
             conversation_id=self.conversation_id,
-            tool_name="devflow_get_thread_context",
+            tool_name="mergegate_get_thread_context",
             query=keyword or str(message_id or ""),
             results=results,
             citations=citations,
@@ -2438,7 +2438,7 @@ class MemoryTools:
             self.db,
             repo_id=self.repo_id,
             conversation_id=self.conversation_id,
-            tool_name="devflow_read_session_events",
+            tool_name="mergegate_read_session_events",
             query=str(session_id or "latest sessions"),
             results=results,
             citations=citations,

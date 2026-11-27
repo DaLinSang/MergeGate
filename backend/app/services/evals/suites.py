@@ -159,7 +159,7 @@ def _suite_applies_to_repo(payload: dict[str, Any], repo: Repository) -> bool:
         否则 → 仓库的 name 或 full_name 必须在列表里
 
     【为什么 name 和 full_name 都认】
-        题库里可能写 "devflow-ai"（只写仓库名），也可能写 "owner/devflow-ai"（全名）。
+        题库里可能写 "mergegate"（只写仓库名），也可能写 "owner/mergegate"（全名）。
         两个都比一遍，减少"明明适用却说没找到"的困惑。
     """
     names = payload.get("repository_names")

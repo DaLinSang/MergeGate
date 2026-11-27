@@ -4,7 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 
 // 浏览器标签页信息。description 用英文，和后端 OpenAPI 的描述保持一致
 export const metadata: Metadata = {
-  title: "DevFlow AI",
+  title: "MergeGate",
   description: "PR / Issue intelligent collaboration agent for engineering teams"
 };
 

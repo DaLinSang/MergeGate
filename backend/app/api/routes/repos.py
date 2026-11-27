@@ -260,7 +260,7 @@ async def connect_repo(payload: RepoConnectRequest, background_tasks: Background
     # demo 模式的兜底数据（不请求 GitHub 也能建出记录）
     repo_data = {
         "id": None,
-        "description": "Demo repository for DevFlow AI",
+        "description": "Demo repository for MergeGate",
         "default_branch": remote_info.default_branch if remote_info and remote_info.default_branch else "main",
         "clone_url": remote_info.clone_url if remote_info else f"https://github.com/{owner}/{repo_name}.git",
     }

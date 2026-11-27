@@ -280,7 +280,7 @@ async def run_basic_eval(db: Session | None = None, repo_id: str | None = None) 
         "ci-debug": "ci_debug_agent.analyze_workflow_run",
         "weekly-report": "report_agent.generate_weekly_report",
         "safety-draft": "safety_agent.classify_action_risk",
-        "project-investigation": "devflow_search_evidence",
+        "project-investigation": "mergegate_search_evidence",
     }
     # ⑤ 覆盖率：实际加载的技能里，有多少个是必需的
     loaded_skill_names = {skill.manifest.name for skill in registry.list_skills()}

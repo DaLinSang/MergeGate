@@ -21,7 +21,7 @@ PR 分支快照（git worktree 生命周期）
         code_analysis._sync_checkout()   拿到主仓库路径
         code_analysis._sync_code_graph() 建 PR 维度的代码图谱
         code_analysis._git_text()        取 commit sha
-        写：worktrees/<repo_id>/pr-<n>-<repo>/ 目录 + .devflow-pr-snapshot.json
+        写：worktrees/<repo_id>/pr-<n>-<repo>/ 目录 + .mergegate-pr-snapshot.json
         删：code_symbols / code_relations（该 PR 的旧图谱）
 
 【核心规则】
@@ -167,7 +167,7 @@ def _snapshot_meta_path(path: Path) -> Path:
         快照是"文件系统状态"，元数据和它同生共死最直观。
         目录被手动删掉，元数据也一起没了 —— 不会出现"库里有记录但目录不在"。
     """
-    return path / ".devflow-pr-snapshot.json"
+    return path / ".mergegate-pr-snapshot.json"
 
 
 def _write_snapshot_meta(path: Path, meta: dict[str, Any]) -> None:
@@ -307,9 +307,9 @@ def prepare_pr_worktree(db: Session, repo: Repository, pr: PullRequest) -> dict[
             —— --force 允许目标目录已存在（虽然前面判过，但防竞态）
             —— -B 会重置分支（避免"分支已存在"报错）
 
-    【★ 为什么本地分支名要加 devflow/ 前缀】
+    【★ 为什么本地分支名要加 mergegate/ 前缀】
         避免和用户的真实分支重名。
-        `devflow/pr-42` 一看就是系统建的临时分支。
+        `mergegate/pr-42` 一看就是系统建的临时分支。
     """
     # ── 步骤 1：拿锁（同一个 PR 串行）──
     lock_key = f"{repo.id}:{pr.id}"
@@ -336,7 +336,7 @@ def prepare_pr_worktree(db: Session, repo: Repository, pr: PullRequest) -> dict[
             target.parent.mkdir(parents=True, exist_ok=True)
 
             ref = pr.head_branch
-            local_branch = f"devflow/pr-{pr.number}"
+            local_branch = f"mergegate/pr-{pr.number}"
 
             # ── 步骤 3：拉 PR 分支的最新提交 ──
             _run_git(["fetch", "origin", ref], cwd=base_checkout)

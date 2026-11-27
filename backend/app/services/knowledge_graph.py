@@ -955,7 +955,7 @@ def _edge_id(from_type: str, from_id: str, to_type: str, to_id: str, relation: s
         重建图谱时，同一条边应该得到同一个 ID。
         这样前端缓存的节点位置不会因为重建而失效。
     """
-    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"devflow-graph:{from_type}:{from_id}:{relation}:{to_type}:{to_id}"))
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"mergegate-graph:{from_type}:{from_id}:{relation}:{to_type}:{to_id}"))
 
 
 def _path_node_id(path: str) -> str:

@@ -29,12 +29,12 @@
        > derived（依赖清单）。分级用于前端展示"这份资料有多可信"。
     3. **fingerprint 决定要不要重扫**：文件 mtime + size + 策略 的哈希。
        没变就跳过，避免每次启动都全量扫一遍。
-    4. **策略可配置**：.devflow/index.yml 支持 auto（自动发现）/ allowlist（白名单）。
+    4. **策略可配置**：.mergegate/index.yml 支持 auto（自动发现）/ allowlist（白名单）。
 
 【本文件函数地图】
 
     ┌─ 配置与发现 ────────────────────────────────────
-    │  load_project_index_policy()  ★ 读 .devflow/index.yml
+    │  load_project_index_policy()  ★ 读 .mergegate/index.yml
     │      └ _normalize_patterns()      清洗 glob（防目录穿越）
     │  _discover_project_docs()     ★ os.walk 扫描 + 分类 + 策略过滤
     │      ├ _classify_file()           ★ 判断文件属于哪一类、哪一级
@@ -96,7 +96,7 @@ PROJECT_INDEX_SOURCE_TYPES = ["project_overview", "project_doc", "project_manife
 PROJECT_INDEX_STATUSES = {"missing", "stale", "building", "ready", "failed"}
 
 # 用户自定义策略的配置文件路径（相对仓库根目录）
-PROJECT_INDEX_CONFIG_PATH = Path(".devflow/index.yml")
+PROJECT_INDEX_CONFIG_PATH = Path(".mergegate/index.yml")
 
 # 两种扫描模式
 PROJECT_INDEX_MODES = {"auto", "allowlist"}
@@ -173,7 +173,7 @@ class ProjectDocCandidate:
 
 @dataclass(frozen=True)
 class ProjectIndexPolicy:
-    """索引策略（来自 .devflow/index.yml，没有配置就是全默认）。
+    """索引策略（来自 .mergegate/index.yml，没有配置就是全默认）。
 
     【两种模式】
         auto       自动发现：扫到符合条件的就索引，exclude 可以排除
@@ -457,7 +457,7 @@ def _normalize_patterns(value: Any, field_name: str) -> tuple[str, ...]:
 
 
 def load_project_index_policy(root: Path) -> ProjectIndexPolicy:
-    """读取 .devflow/index.yml，解析成策略对象。
+    """读取 .mergegate/index.yml，解析成策略对象。
 
     【调用链】_normalize_patterns() → 本函数
     【被谁调用】_discover_project_docs()

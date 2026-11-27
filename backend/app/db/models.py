@@ -4,7 +4,7 @@
 
 【业务定位】
     这里是整个系统所有数据流的【终点站】。
-    DevFlow AI 的业务主线是"定位 → 取证 → 判断 → 沉淀"，其中"沉淀"就落在这里：
+    MergeGate 的业务主线是"定位 → 取证 → 判断 → 沉淀"，其中"沉淀"就落在这里：
     研发事实、对话过程、记忆、知识、安全审计，全部要有地方存。
 
     换句话说：前端看到的每个数字、Agent 引用的每条证据、评测用的每条轨迹，
@@ -128,7 +128,7 @@ class Workspace(Base):
     __tablename__ = "workspaces"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)  # 主键
-    name: Mapped[str] = mapped_column(String(200), index=True)                                       # 工作区名称，如 "DevFlow 全栈"
+    name: Mapped[str] = mapped_column(String(200), index=True)                                       # 工作区名称，如 "MergeGate 全栈"
     description: Mapped[str | None] = mapped_column(Text, nullable=True)                             # 工作区说明
     repo_ids: Mapped[list[str]] = mapped_column(JSON, default=list)                                   # 成员仓库 ID 列表（用 JSON 存，不建关联表：只整体读写，不需反向查）
     created_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)  # 创建人（外键 users.id）
@@ -650,7 +650,7 @@ class EvidenceItem(Base):
 
     【业务含义】把 Issue/PR/CI 的摘要建成"可检索的证据"，供 Agent 快速取证。
     【谁写入】services/chat_memory.py 的 EvidenceStore.rebuild_repo()
-    【谁读取】EvidenceStore.search()、MCP 的 devflow_search_evidence 工具
+    【谁读取】EvidenceStore.search()、MCP 的 mergegate_search_evidence 工具
 
     与 Document 的区别：
         Document = 进向量库做语义检索（完整正文）
@@ -713,7 +713,7 @@ class RecallEvent(Base):
     id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)  # 主键
     repo_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("repositories.id"), nullable=True, index=True)  # 所属仓库
     conversation_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("conversations.id"), nullable=True, index=True)  # 所属会话
-    tool_name: Mapped[str] = mapped_column(String(120), index=True)                                  # 调的是哪个工具，如 "devflow_search_evidence"
+    tool_name: Mapped[str] = mapped_column(String(120), index=True)                                  # 调的是哪个工具，如 "mergegate_search_evidence"
     query: Mapped[str] = mapped_column(Text, default="")                                             # 查询词（用户原话或改写后的）
     scope: Mapped[str] = mapped_column(String(120), default="project")                               # 检索范围：project / conversation / session
     mode: Mapped[str] = mapped_column(String(80), default="hybrid")                                  # 检索方式：hybrid / vector / keyword

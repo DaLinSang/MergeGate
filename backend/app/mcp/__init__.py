@@ -4,7 +4,7 @@ MCP 子包
 
 【模块职责】
     存放以 MCP（Model Context Protocol）协议对外暴露能力的服务端实现。
-    目前只有一个：memory_server —— 把 DevFlow 的记忆能力暴露成 3 个工具。
+    目前只有一个：memory_server —— 把 MergeGate 的记忆能力暴露成 3 个工具。
 
 【在系统中的位置】
     services/mcp_client.py（客户端，起子进程）

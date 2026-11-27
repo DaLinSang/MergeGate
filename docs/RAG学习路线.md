@@ -1,4 +1,4 @@
-# RAG 代码学习路线（DevFlow AI）
+# RAG 代码学习路线（MergeGate）
 
 > 目标：把 `backend/app/services/rag/` 这 12 个文件，按**数据真实流动的顺序**串起来读，
 > 每一步都知道「在哪个文件、哪个函数、为什么这么设计」。
